@@ -28,6 +28,7 @@ export const useNavigation = (t, docsLink, headerNavModules) => {
       pricing: true,
       docs: true,
       about: true,
+      start: true,
     };
 
     // 使用传入的配置或默认配置
@@ -49,10 +50,15 @@ export const useNavigation = (t, docsLink, headerNavModules) => {
         itemKey: 'pricing',
         to: '/pricing',
       },
+      {
+        text: t('快速开始'),
+        itemKey: 'start',
+        to: '/start',
+      },
       ...(docsLink
         ? [
             {
-              text: t('文档'),
+              text: t('API 文档'),
               itemKey: 'docs',
               isExternal: true,
               externalLink: docsLink,
