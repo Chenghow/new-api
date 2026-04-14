@@ -46,7 +46,6 @@ export default function SettingsHeaderNavModules(props) {
       enabled: true,
       requireAuth: false, // 默认不需要登录鉴权
     },
-    start: true,
     docs: true,
     about: true,
   });
@@ -87,7 +86,6 @@ export default function SettingsHeaderNavModules(props) {
         enabled: true,
         requireAuth: false,
       },
-      start: true,
       docs: true,
       about: true,
     };
@@ -155,7 +153,6 @@ export default function SettingsHeaderNavModules(props) {
             requireAuth: false,
           },
           docs: true,
-          start: true,
           about: true,
         };
         setHeaderNavModules(defaultModules);
@@ -180,11 +177,6 @@ export default function SettingsHeaderNavModules(props) {
       title: t('模型广场'),
       description: t('模型定价，需要登录访问'),
       hasSubConfig: true, // 标识该模块有子配置
-    },
-    {
-      key: 'start',
-      title: t('快速开始'),
-      description: t('快速开始指南和教程'),
     },
     {
       key: 'docs',
