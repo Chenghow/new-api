@@ -47,6 +47,7 @@ const OtherSetting = () => {
     Logo: '',
     Footer: '',
     About: '',
+    QuickStart: '',
     HomePageContent: '',
   });
   let [loading, setLoading] = useState(false);
@@ -80,6 +81,7 @@ const OtherSetting = () => {
     Logo: false,
     HomePageContent: false,
     About: false,
+    QuickStart: false,
     Footer: false,
     CheckUpdate: false,
   });
@@ -212,6 +214,19 @@ const OtherSetting = () => {
       showError('关于内容更新失败');
     } finally {
       setLoadingInput((loadingInput) => ({ ...loadingInput, About: false }));
+    }
+  };
+  // 个性化设置 - 快速开始
+  const submitQuickStart = async () => {
+    try {
+      setLoadingInput((loadingInput) => ({ ...loadingInput, QuickStart: true }));
+      await updateOption('QuickStart', inputs.QuickStart);
+      showSuccess(t('快速开始内容已更新'));
+    } catch (error) {
+      console.error(t('快速开始内容更新失败'), error);
+      showError(t('快速开始内容更新失败'));
+    } finally {
+      setLoadingInput((loadingInput) => ({ ...loadingInput, QuickStart: false }));
     }
   };
   // 个性化设置 - 页脚
@@ -472,6 +487,19 @@ const OtherSetting = () => {
               />
               <Button onClick={submitAbout} loading={loadingInput['About']}>
                 {t('设置关于')}
+              </Button>
+              <Form.TextArea
+                label={t('快速开始')}
+                placeholder={t(
+                  '在此输入新的快速开始内容，支持 Markdown & HTML 代码。如果输入的是一个链接，则会使用该链接作为 iframe 的 src 属性，这允许你设置任意网页作为快速开始页面',
+                )}
+                field={'QuickStart'}
+                onChange={handleInputChange}
+                style={{ fontFamily: 'JetBrains Mono, Consolas' }}
+                autosize={{ minRows: 6, maxRows: 12 }}
+              />
+              <Button onClick={submitQuickStart} loading={loadingInput['QuickStart']}>
+                {t('设置快速开始')}
               </Button>
               {/*  */}
               <Banner
