@@ -190,7 +190,7 @@ func RequestAlipaySubscriptionPay(c *gin.Context, plan *model.SubscriptionPlan) 
 	)
 	if err != nil {
 		log.Printf("拉起支付宝订阅支付失败: %v", err)
-		_ = model.ExpireSubscriptionOrder(tradeNo)
+		_ = model.ExpireSubscriptionOrder(tradeNo, PaymentMethodAlipay)
 		c.JSON(http.StatusOK, gin.H{"message": "error", "data": "拉起支付失败"})
 		return true
 	}
@@ -258,7 +258,7 @@ func AlipayNotify(c *gin.Context) {
 	defer UnlockOrder(tradeNo)
 
 	payload := common.GetJsonString(notification)
-	if err = model.CompleteSubscriptionOrder(tradeNo, payload); err == nil {
+	if err = model.CompleteSubscriptionOrder(tradeNo, payload, PaymentMethodAlipay); err == nil {
 		alipay.AckNotification(c.Writer)
 		return
 	} else if err != nil && !errors.Is(err, model.ErrSubscriptionOrderNotFound) {
