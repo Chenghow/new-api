@@ -3,13 +3,13 @@ package controller
 import (
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/QuantumNous/new-api/common"
+	"github.com/QuantumNous/new-api/logger"
 	"github.com/QuantumNous/new-api/model"
 	"github.com/QuantumNous/new-api/service"
 	"github.com/QuantumNous/new-api/setting"
@@ -142,7 +142,7 @@ func RequestAlipayTopupPay(c *gin.Context, req *EpayRequest, payMoney float64) b
 		getAlipayTopupReturnURL(),
 	)
 	if err != nil {
-		log.Printf("拉起支付宝支付失败: %v", err)
+		logger.LogError(c.Request.Context(), fmt.Sprintf("支付宝 拉起支付失败 error=%q", err.Error()))
 		topUp.Status = common.TopUpStatusFailed
 		_ = topUp.Update()
 		c.JSON(http.StatusOK, gin.H{"message": "error", "data": "拉起支付失败"})
@@ -189,7 +189,7 @@ func RequestAlipaySubscriptionPay(c *gin.Context, plan *model.SubscriptionPlan) 
 		getAlipaySubscriptionReturnURL(),
 	)
 	if err != nil {
-		log.Printf("拉起支付宝订阅支付失败: %v", err)
+		logger.LogError(c.Request.Context(), fmt.Sprintf("支付宝 拉起订阅支付失败 error=%q", err.Error()))
 		_ = model.ExpireSubscriptionOrder(tradeNo, PaymentMethodAlipay)
 		c.JSON(http.StatusOK, gin.H{"message": "error", "data": "拉起支付失败"})
 		return true
@@ -206,15 +206,18 @@ func RequestAlipaySubscriptionPay(c *gin.Context, plan *model.SubscriptionPlan) 
 }
 
 func AlipayNotify(c *gin.Context) {
+	ctx := c.Request.Context()
+	logger.LogInfo(ctx, fmt.Sprintf("支付宝 webhook 收到请求 path=%q client_ip=%s method=%s", c.Request.RequestURI, c.ClientIP(), c.Request.Method))
+
 	client, err := getAlipayClient()
 	if err != nil {
-		log.Printf("支付宝回调配置错误: %v", err)
+		logger.LogError(ctx, fmt.Sprintf("支付宝 webhook 配置错误 client_ip=%s error=%q", c.ClientIP(), err.Error()))
 		c.String(http.StatusOK, "fail")
 		return
 	}
 
 	if err = c.Request.ParseForm(); err != nil {
-		log.Printf("解析支付宝回调参数失败: %v", err)
+		logger.LogError(ctx, fmt.Sprintf("支付宝 webhook 表单解析失败 client_ip=%s error=%q", c.ClientIP(), err.Error()))
 		c.String(http.StatusOK, "fail")
 		return
 	}
@@ -224,32 +227,45 @@ func AlipayNotify(c *gin.Context) {
 		values = c.Request.URL.Query()
 	}
 	if len(values) == 0 {
-		log.Printf("支付宝回调参数为空")
+		logger.LogWarn(ctx, fmt.Sprintf("支付宝 webhook 参数为空 client_ip=%s", c.ClientIP()))
 		c.String(http.StatusOK, "fail")
 		return
 	}
 
-	notification, err := client.DecodeNotification(c.Request.Context(), values)
+	logger.LogInfo(ctx, fmt.Sprintf("支付宝 webhook 参数 client_ip=%s trade_status=%q out_trade_no=%q app_id=%q sign_type=%q",
+		c.ClientIP(),
+		values.Get("trade_status"),
+		values.Get("out_trade_no"),
+		values.Get("app_id"),
+		values.Get("sign_type"),
+	))
+
+	notification, err := client.DecodeNotification(ctx, values)
 	if err != nil {
-		log.Printf("支付宝回调验签失败: %v", err)
+		logger.LogError(ctx, fmt.Sprintf("支付宝 webhook 验签失败 client_ip=%s error=%q raw_app_id=%q trade_status=%q",
+			c.ClientIP(), err.Error(), values.Get("app_id"), values.Get("trade_status")))
 		c.String(http.StatusOK, "fail")
 		return
 	}
 
 	if notification.AppId != strings.TrimSpace(setting.AlipayAppId) {
-		log.Printf("支付宝回调 app_id 不匹配: %s", notification.AppId)
+		logger.LogWarn(ctx, fmt.Sprintf("支付宝 webhook app_id 不匹配 client_ip=%s notify_app_id=%q config_app_id=%q",
+			c.ClientIP(), notification.AppId, setting.AlipayAppId))
 		c.String(http.StatusOK, "fail")
 		return
 	}
 
 	tradeNo := strings.TrimSpace(notification.OutTradeNo)
 	if tradeNo == "" {
-		log.Printf("支付宝回调缺少 out_trade_no")
+		logger.LogWarn(ctx, fmt.Sprintf("支付宝 webhook 缺少 out_trade_no client_ip=%s", c.ClientIP()))
 		c.String(http.StatusOK, "fail")
 		return
 	}
 
+	logger.LogInfo(ctx, fmt.Sprintf("支付宝 webhook 验签成功 trade_no=%s trade_status=%s client_ip=%s", tradeNo, notification.TradeStatus, c.ClientIP()))
+
 	if notification.TradeStatus != alipay.TradeStatusSuccess && notification.TradeStatus != alipay.TradeStatusFinished {
+		logger.LogInfo(ctx, fmt.Sprintf("支付宝 webhook 忽略非成功状态 trade_no=%s trade_status=%s", tradeNo, notification.TradeStatus))
 		alipay.AckNotification(c.Writer)
 		return
 	}
@@ -259,19 +275,21 @@ func AlipayNotify(c *gin.Context) {
 
 	payload := common.GetJsonString(notification)
 	if err = model.CompleteSubscriptionOrder(tradeNo, payload, PaymentMethodAlipay); err == nil {
+		logger.LogInfo(ctx, fmt.Sprintf("支付宝 订阅订单完成 trade_no=%s", tradeNo))
 		alipay.AckNotification(c.Writer)
 		return
 	} else if err != nil && !errors.Is(err, model.ErrSubscriptionOrderNotFound) {
-		log.Printf("支付宝订阅订单处理失败: %v, 订单号: %s", err, tradeNo)
+		logger.LogError(ctx, fmt.Sprintf("支付宝 订阅订单处理失败 trade_no=%s error=%q", tradeNo, err.Error()))
 		c.String(http.StatusOK, "fail")
 		return
 	}
 
 	if err = model.RechargeAlipay(tradeNo); err != nil {
-		log.Printf("支付宝充值处理失败: %v, 订单号: %s", err, tradeNo)
+		logger.LogError(ctx, fmt.Sprintf("支付宝 充值处理失败 trade_no=%s error=%q", tradeNo, err.Error()))
 		c.String(http.StatusOK, "fail")
 		return
 	}
 
+	logger.LogInfo(ctx, fmt.Sprintf("支付宝 充值成功 trade_no=%s", tradeNo))
 	alipay.AckNotification(c.Writer)
 }
