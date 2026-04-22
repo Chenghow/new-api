@@ -60,6 +60,10 @@ func SubscriptionRequestEpay(c *gin.Context) {
 		}
 	}
 
+	if req.PaymentMethod == PaymentMethodAlipay && RequestAlipaySubscriptionPay(c, plan) {
+		return
+	}
+
 	callBackAddress := service.GetCallbackAddress()
 	returnUrl, err := url.Parse(callBackAddress + "/api/subscription/epay/return")
 	if err != nil {

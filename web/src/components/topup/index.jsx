@@ -227,24 +227,24 @@ const TopUp = () => {
       if (res !== undefined) {
         const { message, data } = res.data;
         if (message === 'success') {
-          if (payWay === 'stripe') {
-            // Stripe 支付回调处理
+          if (data?.pay_link) {
             window.open(data.pay_link, '_blank');
-          } else {
-            // 普通支付表单提交
-            let params = data;
-            let url = res.data.url;
-            let form = document.createElement('form');
+          } else if (data?.checkout_url) {
+            window.open(data.checkout_url, '_blank');
+          } else if (res.data.url) {
+            const params = data;
+            const url = res.data.url;
+            const form = document.createElement('form');
             form.action = url;
             form.method = 'POST';
-            let isSafari =
+            const isSafari =
               navigator.userAgent.indexOf('Safari') > -1 &&
               navigator.userAgent.indexOf('Chrome') < 1;
             if (!isSafari) {
               form.target = '_blank';
             }
-            for (let key in params) {
-              let input = document.createElement('input');
+            for (const key in params) {
+              const input = document.createElement('input');
               input.type = 'hidden';
               input.name = key;
               input.value = params[key];
@@ -253,6 +253,8 @@ const TopUp = () => {
             document.body.appendChild(form);
             form.submit();
             document.body.removeChild(form);
+          } else {
+            showError(t('支付链接缺失'));
           }
         } else {
           const errorMsg =
