@@ -92,6 +92,14 @@ func InitOptionMap() {
 	common.OptionMap["AlipayPrivateKey"] = setting.AlipayPrivateKey
 	common.OptionMap["AlipayPublicKey"] = setting.AlipayPublicKey
 	common.OptionMap["AlipaySandbox"] = strconv.FormatBool(setting.AlipaySandbox)
+	common.OptionMap["WechatPayEnabled"] = strconv.FormatBool(setting.WechatPayEnabled)
+	common.OptionMap["WechatPayAppId"] = setting.WechatPayAppId
+	common.OptionMap["WechatPayMchId"] = setting.WechatPayMchId
+	common.OptionMap["WechatPayApiV3Key"] = setting.WechatPayApiV3Key
+	common.OptionMap["WechatPayPrivateKey"] = setting.WechatPayPrivateKey
+	common.OptionMap["WechatPayCertSerialNo"] = setting.WechatPayCertSerialNo
+	common.OptionMap["WechatPayPublicKeyId"] = setting.WechatPayPublicKeyId
+	common.OptionMap["WechatPayPublicKey"] = setting.WechatPayPublicKey
 	common.OptionMap["CreemApiKey"] = setting.CreemApiKey
 	common.OptionMap["CreemProducts"] = setting.CreemProducts
 	common.OptionMap["CreemTestMode"] = strconv.FormatBool(setting.CreemTestMode)
@@ -397,6 +405,22 @@ func updateOptionMap(key string, value string) (err error) {
 		setting.AlipayPublicKey = value
 	case "AlipaySandbox":
 		setting.AlipaySandbox = value == "true"
+	case "WechatPayEnabled":
+		setting.WechatPayEnabled = value == "true"
+	case "WechatPayAppId":
+		setting.WechatPayAppId = value
+	case "WechatPayMchId":
+		setting.WechatPayMchId = value
+	case "WechatPayApiV3Key":
+		setting.WechatPayApiV3Key = value
+	case "WechatPayPrivateKey":
+		setting.WechatPayPrivateKey = value
+	case "WechatPayCertSerialNo":
+		setting.WechatPayCertSerialNo = value
+	case "WechatPayPublicKeyId":
+		setting.WechatPayPublicKeyId = value
+	case "WechatPayPublicKey":
+		setting.WechatPayPublicKey = value
 	case "CreemApiKey":
 		setting.CreemApiKey = value
 	case "CreemProducts":

@@ -17,13 +17,35 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import UsageLogsTable from '../../components/table/usage-logs';
+import { API, showError, showSuccess } from '../../helpers';
 
-const Token = () => (
-  <div className='mt-[60px] px-2'>
-    <UsageLogsTable />
-  </div>
-);
+const Token = () => {
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const outTradeNo = params.get('out_trade_no');
+    if (!outTradeNo) return;
+
+    // 从支付宝返回后主动查询订单状态
+    API.get(`/api/alipay/check?out_trade_no=${encodeURIComponent(outTradeNo)}`)
+      .then((res) => {
+        if (res.data && res.data.data === '充值成功') {
+          showSuccess('充值成功！额度已到账，请刷新页面查看。');
+        } else {
+          showError('订单支付处理中，请稍后刷新页面查看额度。');
+        }
+      })
+      .catch(() => {
+        showError('订单支付处理中，请稍后刷新页面查看额度。');
+      });
+  }, []);
+
+  return (
+    <div className='mt-[60px] px-2'>
+      <UsageLogsTable />
+    </div>
+  );
+};
 
 export default Token;

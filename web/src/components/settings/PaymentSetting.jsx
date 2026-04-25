@@ -25,6 +25,7 @@ import SettingsPaymentGatewayStripe from '../../pages/Setting/Payment/SettingsPa
 import SettingsPaymentGatewayCreem from '../../pages/Setting/Payment/SettingsPaymentGatewayCreem';
 import SettingsPaymentGatewayWaffo from '../../pages/Setting/Payment/SettingsPaymentGatewayWaffo';
 import SettingsPaymentGatewayAlipay from '../../pages/Setting/Payment/SettingsPaymentGatewayAlipay';
+import SettingsPaymentGatewayWechat from '../../pages/Setting/Payment/SettingsPaymentGatewayWechat';
 import SettingsPaymentGatewayWaffoPancake from '../../pages/Setting/Payment/SettingsPaymentGatewayWaffoPancake';
 import { API, showError, toBoolean } from '../../helpers';
 import { useTranslation } from 'react-i18next';
@@ -49,6 +50,15 @@ const PaymentSetting = () => {
     AlipayAppId: '',
     AlipayPrivateKey: '',
     AlipayPublicKey: '',
+
+    WechatPayEnabled: false,
+    WechatPayAppId: '',
+    WechatPayMchId: '',
+    WechatPayApiV3Key: '',
+    WechatPayCertSerialNo: '',
+    WechatPayPublicKeyId: '',
+    WechatPayPrivateKey: '',
+    WechatPayPublicKey: '',
 
     StripeApiSecret: '',
     StripeWebhookSecret: '',
@@ -186,6 +196,13 @@ const PaymentSetting = () => {
             </Tabs.TabPane>
             <Tabs.TabPane tab={t('支付宝设置')} itemKey='alipay'>
               <SettingsPaymentGatewayAlipay
+                options={inputs}
+                refresh={onRefresh}
+                hideSectionTitle
+              />
+            </Tabs.TabPane>
+            <Tabs.TabPane tab={t('微信支付设置')} itemKey='wechat'>
+              <SettingsPaymentGatewayWechat
                 options={inputs}
                 refresh={onRefresh}
                 hideSectionTitle

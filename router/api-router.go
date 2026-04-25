@@ -50,6 +50,9 @@ func SetApiRouter(router *gin.Engine) {
 		apiRouter.POST("/stripe/webhook", controller.StripeWebhook)
 		apiRouter.POST("/creem/webhook", controller.CreemWebhook)
 		apiRouter.POST("/alipay/notify", controller.AlipayNotify)
+		apiRouter.GET("/alipay/check", middleware.UserAuth(), controller.AlipayCheckOrder)
+		apiRouter.POST("/wechat/notify", controller.WechatPayNotify)
+		apiRouter.GET("/wechat/check", middleware.UserAuth(), controller.WechatPayCheckOrder)
 		apiRouter.POST("/waffo/webhook", controller.WaffoWebhook)
 		//apiRouter.POST("/waffo-pancake/webhook", controller.WaffoPancakeWebhook)
 

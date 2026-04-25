@@ -135,6 +135,7 @@ func RequestAlipayTopupPay(c *gin.Context, req *EpayRequest, payMoney float64) b
 		return true
 	}
 
+	logger.LogInfo(c.Request.Context(), fmt.Sprintf("支付宝 创建订单 trade_no=%s notify_url=%q return_url=%q", tradeNo, getAlipayNotifyURL(), getAlipayTopupReturnURL()))
 	payLink, err := requestAlipayPagePayLink(
 		fmt.Sprintf("TUC%d", req.Amount),
 		tradeNo,
@@ -182,6 +183,7 @@ func RequestAlipaySubscriptionPay(c *gin.Context, plan *model.SubscriptionPlan) 
 		return true
 	}
 
+	logger.LogInfo(c.Request.Context(), fmt.Sprintf("支付宝 创建订单 trade_no=%s notify_url=%q return_url=%q", tradeNo, getAlipayNotifyURL(), getAlipayTopupReturnURL()))
 	payLink, err := requestAlipayPagePayLink(
 		fmt.Sprintf("SUB:%s", plan.Title),
 		tradeNo,
@@ -284,7 +286,7 @@ func AlipayNotify(c *gin.Context) {
 		return
 	}
 
-	if err = model.RechargeAlipay(tradeNo); err != nil {
+	if err = model.RechargeAlipay(tradeNo, c.ClientIP()); err != nil {
 		logger.LogError(ctx, fmt.Sprintf("支付宝 充值处理失败 trade_no=%s error=%q", tradeNo, err.Error()))
 		c.String(http.StatusOK, "fail")
 		return
@@ -292,4 +294,48 @@ func AlipayNotify(c *gin.Context) {
 
 	logger.LogInfo(ctx, fmt.Sprintf("支付宝 充值成功 trade_no=%s", tradeNo))
 	alipay.AckNotification(c.Writer)
+}
+
+// AlipayCheckOrder actively queries Alipay for order status and completes the topup if paid.
+// Called by the frontend after returning from the Alipay payment page.
+func AlipayCheckOrder(c *gin.Context) {
+ctx := c.Request.Context()
+tradeNo := strings.TrimSpace(c.Query("out_trade_no"))
+if tradeNo == "" {
+c.JSON(http.StatusOK, gin.H{"message": "error", "data": "缺少订单号"})
+return
+}
+
+client, err := getAlipayClient()
+if err != nil {
+logger.LogError(ctx, fmt.Sprintf("支付宝 主动查单 获取客户端失败 trade_no=%s error=%q", tradeNo, err.Error()))
+c.JSON(http.StatusOK, gin.H{"message": "error", "data": "支付宝配置错误"})
+return
+}
+
+rsp, err := client.TradeQuery(ctx, alipay.TradeQuery{OutTradeNo: tradeNo})
+if err != nil {
+logger.LogError(ctx, fmt.Sprintf("支付宝 主动查单 请求失败 trade_no=%s error=%q", tradeNo, err.Error()))
+c.JSON(http.StatusOK, gin.H{"message": "error", "data": "查询失败，请联系管理员"})
+return
+}
+
+logger.LogInfo(ctx, fmt.Sprintf("支付宝 主动查单 trade_no=%s trade_status=%s", tradeNo, rsp.TradeStatus))
+
+if rsp.TradeStatus != alipay.TradeStatusSuccess && rsp.TradeStatus != alipay.TradeStatusFinished {
+c.JSON(http.StatusOK, gin.H{"message": "pending", "data": string(rsp.TradeStatus)})
+return
+}
+
+LockOrder(tradeNo)
+defer UnlockOrder(tradeNo)
+
+if err = model.RechargeAlipay(tradeNo, c.ClientIP()); err != nil {
+logger.LogError(ctx, fmt.Sprintf("支付宝 主动查单 充值处理失败 trade_no=%s error=%q", tradeNo, err.Error()))
+c.JSON(http.StatusOK, gin.H{"message": "error", "data": "充值处理失败"})
+return
+}
+
+logger.LogInfo(ctx, fmt.Sprintf("支付宝 主动查单 充值成功 trade_no=%s", tradeNo))
+c.JSON(http.StatusOK, gin.H{"message": "success", "data": "充值成功"})
 }

@@ -30,6 +30,7 @@ import {
   getQuotaPerUnit,
 } from '../../helpers';
 import { Modal, Toast } from '@douyinfe/semi-ui';
+import { QRCodeSVG } from 'qrcode.react';
 import { useTranslation } from 'react-i18next';
 import { UserContext } from '../../context/User';
 import { StatusContext } from '../../context/Status';
@@ -77,6 +78,13 @@ const TopUp = () => {
   const [waffoMinTopUp, setWaffoMinTopUp] = useState(1);
   const [enableWaffoPancakeTopUp, setEnableWaffoPancakeTopUp] = useState(false);
   const [waffoPancakeMinTopUp, setWaffoPancakeMinTopUp] = useState(1);
+
+  // 微信 Native 支付相关状态
+  const [enableWechatPay, setEnableWechatPay] = useState(false);
+  const [wechatQrUrl, setWechatQrUrl] = useState('');
+  const [wechatOrderId, setWechatOrderId] = useState('');
+  const [wechatQrOpen, setWechatQrOpen] = useState(false);
+  const wechatPollRef = useRef(null);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [open, setOpen] = useState(false);
@@ -232,7 +240,32 @@ const TopUp = () => {
     }
   };
 
-  const onlineTopUp = async () => {
+  const stopWechatPolling = () => {
+    if (wechatPollRef.current) {
+      clearInterval(wechatPollRef.current);
+      wechatPollRef.current = null;
+    }
+  };
+
+  const startWechatPolling = (orderId) => {
+    stopWechatPolling();
+    wechatPollRef.current = setInterval(async () => {
+      try {
+        const res = await API.get(`/api/wechat/check?out_trade_no=${orderId}`);
+        const { message } = res.data;
+        if (message === 'success') {
+          stopWechatPolling();
+          setWechatQrOpen(false);
+          showSuccess(t('微信支付成功'));
+          window.location.reload();
+        }
+      } catch (e) {
+        // ignore polling errors
+      }
+    }, 3000);
+  };
+
+    const onlineTopUp = async () => {
     if (payWay === 'waffo_pancake') {
       setConfirmLoading(true);
       try {
@@ -294,6 +327,12 @@ const TopUp = () => {
         if (message === 'success') {
           if (data?.pay_link) {
             window.open(data.pay_link, '_blank');
+          } else if (data?.code_url) {
+            // 微信 Native 扫码支付
+            setWechatQrUrl(data.code_url);
+            setWechatOrderId(data.order_id || '');
+            setWechatQrOpen(true);
+            startWechatPolling(data.order_id);
           } else if (data?.checkout_url) {
             window.open(data.checkout_url, '_blank');
           } else if (res.data.url) {
@@ -641,6 +680,7 @@ const TopUp = () => {
           const enableWaffoTopUp = data.enable_waffo_topup || false;
           const enableWaffoPancakeTopUp =
             data.enable_waffo_pancake_topup || false;
+          const enableWechatPayTopUp = data.enable_wechat_pay || false;
           const minTopUpValue = enableOnlineTopUp
             ? data.min_topup
             : enableStripeTopUp
@@ -658,6 +698,7 @@ const TopUp = () => {
           setWaffoMinTopUp(data.waffo_min_topup || 1);
           setEnableWaffoPancakeTopUp(enableWaffoPancakeTopUp);
           setWaffoPancakeMinTopUp(data.waffo_pancake_min_topup || 1);
+          setEnableWechatPay(enableWechatPayTopUp);
           setMinTopUp(minTopUpValue);
           setTopUpCount(minTopUpValue);
 
@@ -877,6 +918,27 @@ const TopUp = () => {
 
   return (
     <div className='w-full max-w-7xl mx-auto relative min-h-screen lg:min-h-0 mt-[60px] px-2'>
+      {/* 微信 Native 支付二维码弹窗 */}
+      <Modal
+        title={t('微信扫码支付')}
+        visible={wechatQrOpen}
+        onCancel={() => {
+          setWechatQrOpen(false);
+          stopWechatPolling();
+        }}
+        footer={null}
+        centered
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '16px 0' }}>
+          {wechatQrUrl ? (
+            <QRCodeSVG value={wechatQrUrl} size={200} />
+          ) : null}
+          <p style={{ marginTop: 16, color: 'var(--semi-color-text-1)' }}>
+            {t('请使用微信扫描二维码完成支付')}
+          </p>
+        </div>
+      </Modal>
+
       {/* 划转模态框 */}
       <TransferModal
         t={t}
