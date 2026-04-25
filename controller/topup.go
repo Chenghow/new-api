@@ -28,6 +28,7 @@ func GetTopUpInfo(c *gin.Context) {
 
 	enableEpayTopup := operation_setting.PayAddress != "" && operation_setting.EpayId != "" && operation_setting.EpayKey != ""
 	enableAlipayTopup := isAlipayV3Enabled()
+	enableWechatPay := isWechatNativePayEnabled()
 
 	if enableAlipayTopup {
 		hasAlipay := false
@@ -46,11 +47,18 @@ func GetTopUpInfo(c *gin.Context) {
 		}
 	}
 
-	if !enableEpayTopup && enableAlipayTopup {
-		filtered := make([]map[string]string, 0, 1)
+	if !enableEpayTopup {
+		// When Epay is unavailable, drop channels that only work via Epay.
+		// Keep only types that have a working standalone backend.
+		filtered := make([]map[string]string, 0)
 		for _, method := range payMethods {
-			if method["type"] == PaymentMethodAlipay {
+			t := method["type"]
+			switch {
+			case t == PaymentMethodAlipay && enableAlipayTopup:
 				filtered = append(filtered, method)
+			case t == PaymentMethodWechatNative && enableWechatPay:
+				filtered = append(filtered, method)
+			// All other types (wxpay, custom1, etc.) are Epay-only: drop them
 			}
 		}
 		payMethods = filtered
@@ -120,8 +128,27 @@ func GetTopUpInfo(c *gin.Context) {
 		}
 	}
 
+	// 如果启用了微信 Native 支付，添加到支付方法列表
+	if enableWechatPay {
+		hasWechat := false
+		for _, method := range payMethods {
+			if method["type"] == PaymentMethodWechatNative {
+				hasWechat = true
+				break
+			}
+		}
+		if !hasWechat {
+			payMethods = append(payMethods, map[string]string{
+				"name":  "微信支付",
+				"type":  PaymentMethodWechatNative,
+				"color": "rgba(var(--semi-green-5), 1)",
+			})
+		}
+	}
+
 	data := gin.H{
-		"enable_online_topup":        enableEpayTopup || enableAlipayTopup,
+		"enable_online_topup":        enableEpayTopup || enableAlipayTopup || enableWechatPay,
+		"enable_wechat_pay":          enableWechatPay,
 		"enable_alipay_topup":        enableAlipayTopup,
 		"enable_stripe_topup":        isStripeTopUpEnabled(),
 		"enable_creem_topup":         isCreemTopUpEnabled(),
@@ -232,12 +259,19 @@ func RequestEpay(c *gin.Context) {
 		return
 	}
 
-	if !operation_setting.ContainsPayMethod(req.PaymentMethod) {
-		c.JSON(http.StatusOK, gin.H{"message": "error", "data": "支付方式不存在"})
+	// Standalone gateways: check before ContainsPayMethod so their
+	// dynamically-added types (e.g. "alipay", "wechat_native") are not
+	// blocked even when absent from the admin PayMethods JSON config.
+	if RequestAlipayTopupPay(c, &req, payMoney) {
+		return
+	}
+	if RequestWechatNativePay(c, &req, payMoney) {
 		return
 	}
 
-	if RequestAlipayTopupPay(c, &req, payMoney) {
+	// For Epay-style channels, validate the type is in the configured list
+	if !operation_setting.ContainsPayMethod(req.PaymentMethod) {
+		c.JSON(http.StatusOK, gin.H{"message": "error", "data": "支付方式不存在"})
 		return
 	}
 
