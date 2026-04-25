@@ -276,7 +276,7 @@ func AlipayNotify(c *gin.Context) {
 	defer UnlockOrder(tradeNo)
 
 	payload := common.GetJsonString(notification)
-	if err = model.CompleteSubscriptionOrder(tradeNo, payload, PaymentMethodAlipay); err == nil {
+	if err = model.CompleteSubscriptionOrder(tradeNo, payload, PaymentMethodAlipay, ""); err == nil {
 		logger.LogInfo(ctx, fmt.Sprintf("支付宝 订阅订单完成 trade_no=%s", tradeNo))
 		alipay.AckNotification(c.Writer)
 		return
