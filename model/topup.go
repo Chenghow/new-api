@@ -29,7 +29,7 @@ const (
 	PaymentMethodCreem        = "creem"
 	PaymentMethodWaffo        = "waffo"
 	PaymentMethodWaffoPancake = "waffo_pancake"
-	PaymentMethodAlipay       = "alipay"
+	PaymentMethodAlipay       = "alipayv3"
         PaymentMethodWechat       = "wechat_native"
 )
 

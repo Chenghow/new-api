@@ -23,7 +23,7 @@ import (
 )
 
 const (
-	PaymentMethodAlipay = "alipay"
+	PaymentMethodAlipay = "alipayv3"
 )
 
 func isAlipayV3Enabled() bool {

@@ -260,7 +260,7 @@ func RequestEpay(c *gin.Context) {
 	}
 
 	// Standalone gateways: check before ContainsPayMethod so their
-	// dynamically-added types (e.g. "alipay", "wechat_native") are not
+	// dynamically-added types (e.g. "alipayv3", "wechat_native") are not
 	// blocked even when absent from the admin PayMethods JSON config.
 	if RequestAlipayTopupPay(c, &req, payMoney) {
 		return
