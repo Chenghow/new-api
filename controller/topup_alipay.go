@@ -67,11 +67,20 @@ func getAlipayNotifyURL() string {
 }
 
 func getAlipayTopupReturnURL() string {
-	return buildAlipayURL(system_setting.ServerAddress, "/console/log")
+	base := strings.TrimRight(strings.TrimSpace(system_setting.ServerAddress), "/")
+	if common.GetTheme() == "classic" {
+		return base + "/console/log"
+	}
+	// default (new) UI: usage-logs/common page (same as classic /console/log)
+	return base + "/usage-logs/common"
 }
 
 func getAlipaySubscriptionReturnURL() string {
-	return buildAlipayURL(system_setting.ServerAddress, "/console/topup")
+	base := strings.TrimRight(strings.TrimSpace(system_setting.ServerAddress), "/")
+	if common.GetTheme() == "classic" {
+		return base + "/console/topup"
+	}
+	return base + "/usage-logs/common"
 }
 
 func requestAlipayPagePayLink(subject, outTradeNo string, totalAmount float64, returnURL string) (string, error) {
