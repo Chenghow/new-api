@@ -1,12 +1,27 @@
+/*
+Copyright (C) 2023-2026 QuantumNous
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+For commercial licensing, please contact support@quantumnous.com
+*/
 import { z } from 'zod'
 import { createFileRoute } from '@tanstack/react-router'
 import { Wallet } from '@/features/wallet'
 
 const walletSearchSchema = z.object({
   show_history: z.boolean().optional(),
-  // Alipay synchronous return: triggers active order check on mount
-  alipay_return: z.coerce.number().optional(),
-  out_trade_no: z.string().optional(),
 })
 
 export const Route = createFileRoute('/_authenticated/wallet/')({
@@ -15,12 +30,6 @@ export const Route = createFileRoute('/_authenticated/wallet/')({
 })
 
 function RouteComponent() {
-  const { show_history, alipay_return, out_trade_no } = Route.useSearch()
-  return (
-    <Wallet
-      initialShowHistory={show_history}
-      alipayReturn={!!alipay_return}
-      alipayOutTradeNo={out_trade_no}
-    />
-  )
+  const { show_history } = Route.useSearch()
+  return <Wallet initialShowHistory={show_history} />
 }

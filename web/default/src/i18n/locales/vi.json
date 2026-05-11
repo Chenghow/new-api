@@ -4400,14 +4400,16 @@
     "Your Telegram Bot Token": "Mã thông báo bot Telegram của bạn",
     "Your Turnstile secret key": "Khóa bí mật Turnstile của bạn",
     "Your Turnstile site key": "Khóa site Turnstile của bạn",
+    "Alipay": "Alipay",
+    "Please wait a moment before trying again.": "Vui lòng chờ một lát rồi thử lại.",
+    "This controls model request rate limiting. Web/API route throttling is configured by environment variables and may still return 429.": "Thiết lập này kiểm soát giới hạn tốc độ yêu cầu mô hình. Giới hạn tuyến Web/API được cấu hình bằng biến môi trường và vẫn có thể trả về 429.",
+    "Too many requests": "Quá nhiều yêu cầu",
+    "Try adjusting your search": "Hãy thử điều chỉnh tìm kiếm",
+    "WeChat Pay": "WeChat Pay",
+    "Your transaction history will appear here": "Lịch sử giao dịch của bạn sẽ xuất hiện ở đây",
     "Zero retention": "Không lưu dữ liệu",
     "Zhipu": "Zhipu",
     "Zhipu V4": "Zhipu V4",
-    "Zoom": "Zoom",
-    "Quick Start": "Bắt đầu nhanh",
-    "No Quick Start Content Set": "Chưa thiết lập nội dung bắt đầu nhanh",
-    "The administrator has not configured any quick start content yet. You can set it in the settings page, supporting HTML, URL or Markdown.": "Quản trị viên vẫn chưa cấu hình nội dung bắt đầu nhanh. Bạn có thể thiết lập tại trang cài đặt, hỗ trợ HTML, URL hoặc Markdown.",
-    "Enter HTML code, Markdown content, or a URL (e.g., https://example.com) to embed as iframe": "Nhập mã HTML, nội dung Markdown hoặc một URL (ví dụ: https://example.com) để nhúng dưới dạng iframe",
-    "Content displayed on the Quick Start page. Supports HTML markup, Markdown, or iframe embedding via URL.": "Nội dung hiển thị trên trang Bắt đầu nhanh. Hỗ trợ HTML, Markdown hoặc nhúng iframe qua URL."
+    "Zoom": "Zoom"
   }
 }

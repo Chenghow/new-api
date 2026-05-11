@@ -1,3 +1,21 @@
+/*
+Copyright (C) 2023-2026 QuantumNous
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+For commercial licensing, please contact support@quantumnous.com
+*/
 import { SettingsPage } from '../components/settings-page'
 import type { BillingSettings } from '../types'
 import {
@@ -85,19 +103,6 @@ const defaultBillingSettings: BillingSettings = {
   WaffoPancakeCurrency: 'USD',
   WaffoPancakeUnitPrice: 1,
   WaffoPancakeMinTopUp: 1,
-  AlipayEnabled: false,
-  AlipayAppId: '',
-  AlipayPrivateKey: '',
-  AlipayPublicKey: '',
-  AlipaySandbox: false,
-  WechatPayEnabled: false,
-  WechatPayAppId: '',
-  WechatPayMchId: '',
-  WechatPayApiV3Key: '',
-  WechatPayCertSerialNo: '',
-  WechatPayPublicKeyId: '',
-  WechatPayPrivateKey: '',
-  WechatPayPublicKey: '',
   'checkin_setting.enabled': false,
   'checkin_setting.min_quota': 1000,
   'checkin_setting.max_quota': 10000,

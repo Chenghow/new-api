@@ -4400,14 +4400,16 @@
     "Your Telegram Bot Token": "あなたのTelegramボットトークン",
     "Your Turnstile secret key": "あなたのTurnstileシークレットキー",
     "Your Turnstile site key": "あなたのTurnstileサイトキー",
+    "Alipay": "Alipay",
+    "Please wait a moment before trying again.": "しばらく待ってからもう一度お試しください。",
+    "This controls model request rate limiting. Web/API route throttling is configured by environment variables and may still return 429.": "これはモデルリクエストのレート制限を制御します。Web/API ルートのスロットリングは環境変数で設定され、引き続き 429 を返す場合があります。",
+    "Too many requests": "リクエストが多すぎます",
+    "Try adjusting your search": "検索条件を調整してみてください",
+    "WeChat Pay": "WeChat Pay",
+    "Your transaction history will appear here": "取引履歴はここに表示されます",
     "Zero retention": "データ保持なし",
     "Zhipu": "Zhipu",
     "Zhipu V4": "Zhipu V 4",
-    "Zoom": "ズーム",
-    "Quick Start": "クイックスタート",
-    "No Quick Start Content Set": "クイックスタートのコンテンツはまだ設定されていません",
-    "The administrator has not configured any quick start content yet. You can set it in the settings page, supporting HTML, URL or Markdown.": "管理者はまだクイックスタートのコンテンツを設定していません。設定ページで HTML、URL、Markdown をサポートして設定できます。",
-    "Enter HTML code, Markdown content, or a URL (e.g., https://example.com) to embed as iframe": "HTMLコード、Markdownコンテンツ、またはURL（例: https://example.com）を入力して iframe として埋め込みます",
-    "Content displayed on the Quick Start page. Supports HTML markup, Markdown, or iframe embedding via URL.": "クイックスタートページに表示されるコンテンツ。HTML マークアップ、Markdown、または URL 経由の iframe 埋め込みに対応します。"
+    "Zoom": "ズーム"
   }
 }

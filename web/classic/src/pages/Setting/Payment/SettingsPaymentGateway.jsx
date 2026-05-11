@@ -127,7 +127,7 @@ export default function SettingsPaymentGateway(props) {
             type='info'
             icon={<Info size={16} />}
             description={t(
-              '易支付接口，回调地址请在通用设置中配置。',
+              '当前仅支持易支付接口，回调地址请在通用设置中配置。',
             )}
             style={{ marginBottom: 16 }}
           />

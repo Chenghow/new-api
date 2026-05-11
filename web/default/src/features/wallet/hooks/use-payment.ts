@@ -1,3 +1,21 @@
+/*
+Copyright (C) 2023-2026 QuantumNous
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+For commercial licensing, please contact support@quantumnous.com
+*/
 import { useState, useCallback } from 'react'
 import i18next from 'i18next'
 import { toast } from 'sonner'
@@ -59,14 +77,7 @@ export function usePayment() {
 
   // Process payment
   const processPayment = useCallback(
-    async (
-      topupAmount: number,
-      paymentType: string,
-      callbacks?: {
-        /** Called when a WeChat Native QR code URL is received. */
-        onWechatQr?: (qrUrl: string, orderId: string) => void
-      }
-    ) => {
+    async (topupAmount: number, paymentType: string) => {
       try {
         setProcessing(true)
 
@@ -88,40 +99,23 @@ export function usePayment() {
           return false
         }
 
-        // Handle Stripe payment (pay_link in data)
+        // Handle Stripe payment
         if (isStripe && response.data?.pay_link) {
           window.open(response.data.pay_link as string, '_blank')
           toast.success(i18next.t('Redirecting to payment page...'))
           return true
         }
 
+        // Handle non-Stripe payment
         if (!isStripe && response.data) {
-          // Alipay v3 / any direct-connect gateway returns { pay_link: "..." }
-          const payLink = (response.data as Record<string, unknown>).pay_link
-          if (typeof payLink === 'string') {
-            window.open(payLink, '_blank')
-            toast.success(i18next.t('Redirecting to payment page...'))
-            return true
-          }
-
-          // WeChat Native returns { code_url: "weixin://...", order_id: "..." }
-          const codeUrl = (response.data as Record<string, unknown>).code_url
-          const orderId = (response.data as Record<string, unknown>).order_id
-          if (typeof codeUrl === 'string') {
-            callbacks?.onWechatQr?.(codeUrl, typeof orderId === 'string' ? orderId : '')
-            return true
-          }
-
-          // Epay: top-level url + form params
           const url = (response as unknown as { url?: string }).url
           if (url) {
-            submitPaymentForm(url, response.data as Record<string, unknown>)
+            submitPaymentForm(url, response.data)
             toast.success(i18next.t('Redirecting to payment page...'))
             return true
           }
         }
 
-        toast.error(i18next.t('Payment link missing'))
         return false
       } catch (_error) {
         toast.error(i18next.t('Payment request failed'))

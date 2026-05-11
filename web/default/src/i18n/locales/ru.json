@@ -4400,14 +4400,16 @@
     "Your Telegram Bot Token": "Ваш токен Telegram-бота",
     "Your Turnstile secret key": "Секретный ключ Turnstile",
     "Your Turnstile site key": "Ключ сайта Turnstile",
+    "Alipay": "Alipay",
+    "Please wait a moment before trying again.": "Пожалуйста, подождите немного и попробуйте снова.",
+    "This controls model request rate limiting. Web/API route throttling is configured by environment variables and may still return 429.": "Этот параметр управляет ограничением частоты запросов к моделям. Ограничение маршрутов Web/API настраивается переменными окружения и всё ещё может возвращать 429.",
+    "Too many requests": "Слишком много запросов",
+    "Try adjusting your search": "Попробуйте изменить условия поиска",
+    "WeChat Pay": "WeChat Pay",
+    "Your transaction history will appear here": "Ваша история транзакций появится здесь",
     "Zero retention": "Без хранения данных",
     "Zhipu": "Zhipu",
     "Zhipu V4": "Zhipu V4",
-    "Zoom": "Zoom",
-    "Quick Start": "Быстрый старт",
-    "No Quick Start Content Set": "Контент быстрого старта не задан",
-    "The administrator has not configured any quick start content yet. You can set it in the settings page, supporting HTML, URL or Markdown.": "Администратор пока не настроил контент быстрого старта. Его можно задать на странице настроек, поддерживаются HTML, URL или Markdown.",
-    "Enter HTML code, Markdown content, or a URL (e.g., https://example.com) to embed as iframe": "Введите HTML-код, Markdown-содержимое или URL (например, https://example.com), чтобы встроить как iframe",
-    "Content displayed on the Quick Start page. Supports HTML markup, Markdown, or iframe embedding via URL.": "Контент, отображаемый на странице быстрого старта. Поддерживает HTML-разметку, Markdown или встраивание iframe по URL."
+    "Zoom": "Zoom"
   }
 }

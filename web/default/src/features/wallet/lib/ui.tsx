@@ -1,3 +1,21 @@
+/*
+Copyright (C) 2023-2026 QuantumNous
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+For commercial licensing, please contact support@quantumnous.com
+*/
 import { type ReactNode } from 'react'
 import { CreditCard, Landmark } from 'lucide-react'
 import { SiAlipay, SiWechat, SiStripe } from 'react-icons/si'
@@ -45,8 +63,7 @@ export function getPaymentIcon(
   paymentType: string | undefined,
   className: string = 'h-4 w-4',
   iconUrl?: string,
-  altName?: string,
-  color?: string
+  altName?: string
 ): ReactNode {
   const safeIconUrl = normalizeHttpIconUrl(iconUrl)
   if (safeIconUrl) {
@@ -72,45 +89,45 @@ export function getPaymentIcon(
       return (
         <SiAlipay
           className={className}
-          style={{ color: color ?? PAYMENT_ICON_COLORS[PAYMENT_TYPES.ALIPAY] }}
+          style={{ color: PAYMENT_ICON_COLORS[PAYMENT_TYPES.ALIPAY] }}
         />
       )
     case PAYMENT_TYPES.WECHAT:
       return (
         <SiWechat
           className={className}
-          style={{ color: color ?? PAYMENT_ICON_COLORS[PAYMENT_TYPES.WECHAT] }}
+          style={{ color: PAYMENT_ICON_COLORS[PAYMENT_TYPES.WECHAT] }}
         />
       )
     case PAYMENT_TYPES.STRIPE:
       return (
         <SiStripe
           className={className}
-          style={{ color: color ?? PAYMENT_ICON_COLORS[PAYMENT_TYPES.STRIPE] }}
+          style={{ color: PAYMENT_ICON_COLORS[PAYMENT_TYPES.STRIPE] }}
         />
       )
     case PAYMENT_TYPES.CREEM:
       return (
         <Landmark
           className={className}
-          style={{ color: color ?? PAYMENT_ICON_COLORS[PAYMENT_TYPES.CREEM] }}
+          style={{ color: PAYMENT_ICON_COLORS[PAYMENT_TYPES.CREEM] }}
         />
       )
     case PAYMENT_TYPES.WAFFO:
       return (
         <CreditCard
           className={className}
-          style={{ color: color ?? PAYMENT_ICON_COLORS[PAYMENT_TYPES.WAFFO] }}
+          style={{ color: PAYMENT_ICON_COLORS[PAYMENT_TYPES.WAFFO] }}
         />
       )
     case PAYMENT_TYPES.WAFFO_PANCAKE:
       return (
         <CreditCard
           className={className}
-          style={{ color: color ?? PAYMENT_ICON_COLORS[PAYMENT_TYPES.WAFFO_PANCAKE] }}
+          style={{ color: PAYMENT_ICON_COLORS[PAYMENT_TYPES.WAFFO_PANCAKE] }}
         />
       )
     default:
-      return <CreditCard className={className} style={color ? { color } : undefined} />
+      return <CreditCard className={className} />
   }
 }

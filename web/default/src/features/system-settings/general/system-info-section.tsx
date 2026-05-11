@@ -1,3 +1,21 @@
+/*
+Copyright (C) 2023-2026 QuantumNous
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+For commercial licensing, please contact support@quantumnous.com
+*/
 import * as z from 'zod'
 import type { Resolver } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -38,7 +56,6 @@ const _systemInfoSchema = z.object({
   Logo: z.string().url().optional().or(z.literal('')),
   Footer: z.string().optional(),
   About: z.string().optional(),
-  QuickStart: z.string().optional(),
   HomePageContent: z.string().optional(),
   legal: z.object({
     user_agreement: z.string().optional(),
@@ -71,7 +88,6 @@ export function SystemInfoSection({ defaultValues }: SystemInfoSectionProps) {
     Logo: normalizeValue(defaultValues.Logo),
     Footer: normalizeValue(defaultValues.Footer),
     About: normalizeValue(defaultValues.About),
-    QuickStart: normalizeValue(defaultValues.QuickStart),
     HomePageContent: normalizeValue(defaultValues.HomePageContent),
     legal: {
       user_agreement: normalizeValue(defaultValues.legal?.user_agreement),
@@ -90,7 +106,6 @@ export function SystemInfoSection({ defaultValues }: SystemInfoSectionProps) {
     Logo: z.string().url().optional().or(z.literal('')),
     Footer: z.string().optional(),
     About: z.string().optional(),
-    QuickStart: z.string().optional(),
     HomePageContent: z.string().optional(),
     legal: z.object({
       user_agreement: z.string().optional(),
@@ -270,31 +285,6 @@ export function SystemInfoSection({ defaultValues }: SystemInfoSectionProps) {
                   <FormDescription>
                     {t(
                       'Supports HTML markup or iframe embedding. Enter HTML code directly, or provide a complete URL to automatically embed it as an iframe.'
-                    )}
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name='QuickStart'
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('Quick Start')}</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder={t(
-                        'Enter HTML code, Markdown content, or a URL (e.g., https://example.com) to embed as iframe'
-                      )}
-                      rows={4}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    {t(
-                      'Content displayed on the Quick Start page. Supports HTML markup, Markdown, or iframe embedding via URL.'
                     )}
                   </FormDescription>
                   <FormMessage />

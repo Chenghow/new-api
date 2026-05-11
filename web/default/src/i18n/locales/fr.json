@@ -4400,14 +4400,16 @@
     "Your Telegram Bot Token": "Votre Jeton de Bot Telegram",
     "Your Turnstile secret key": "Votre clé secrète Turnstile",
     "Your Turnstile site key": "Votre clé de site Turnstile",
+    "Alipay": "Alipay",
+    "Please wait a moment before trying again.": "Veuillez patienter un instant avant de réessayer.",
+    "This controls model request rate limiting. Web/API route throttling is configured by environment variables and may still return 429.": "Ce réglage contrôle la limitation des requêtes de modèles. La limitation des routes Web/API se configure via les variables d'environnement et peut encore renvoyer 429.",
+    "Too many requests": "Trop de requêtes",
+    "Try adjusting your search": "Essayez d'ajuster votre recherche",
+    "WeChat Pay": "WeChat Pay",
+    "Your transaction history will appear here": "Votre historique de transactions apparaîtra ici",
     "Zero retention": "Aucune rétention",
     "Zhipu": "Zhipu",
     "Zhipu V4": "Zhipu V4",
-    "Zoom": "Zoom",
-    "Quick Start": "Démarrage rapide",
-    "No Quick Start Content Set": "Aucun contenu de démarrage rapide défini",
-    "The administrator has not configured any quick start content yet. You can set it in the settings page, supporting HTML, URL or Markdown.": "L'administrateur n'a pas encore configuré de contenu de démarrage rapide. Vous pouvez le définir dans la page des paramètres, avec prise en charge du HTML, d'une URL ou de Markdown.",
-    "Enter HTML code, Markdown content, or a URL (e.g., https://example.com) to embed as iframe": "Saisissez du code HTML, du contenu Markdown ou une URL (par exemple, https://example.com) pour l'intégrer dans une iframe",
-    "Content displayed on the Quick Start page. Supports HTML markup, Markdown, or iframe embedding via URL.": "Contenu affiché sur la page de démarrage rapide. Prend en charge le balisage HTML, Markdown ou l'intégration d'une iframe via URL."
+    "Zoom": "Zoom"
   }
 }

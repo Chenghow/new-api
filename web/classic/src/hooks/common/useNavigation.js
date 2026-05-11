@@ -27,7 +27,6 @@ export const useNavigation = (t, docsLink, headerNavModules) => {
       console: true,
       pricing: true,
       docs: true,
-      quickStart: true,
       about: true,
     };
 
@@ -50,15 +49,10 @@ export const useNavigation = (t, docsLink, headerNavModules) => {
         itemKey: 'pricing',
         to: '/pricing',
       },
-      {
-        text: t('快速开始'),
-        itemKey: 'quickStart',
-        to: '/quickstart',
-      },
       ...(docsLink
         ? [
             {
-              text: t('API 文档'),
+              text: t('文档'),
               itemKey: 'docs',
               isExternal: true,
               externalLink: docsLink,

@@ -1,3 +1,21 @@
+/*
+Copyright (C) 2023-2026 QuantumNous
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+For commercial licensing, please contact support@quantumnous.com
+*/
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { getSelf } from '@/lib/api'
@@ -7,7 +25,6 @@ import { SectionPageLayout } from '@/components/layout'
 import { AffiliateRewardsCard } from './components/affiliate-rewards-card'
 import { BillingHistoryDialog } from './components/dialogs/billing-history-dialog'
 import { CreemConfirmDialog } from './components/dialogs/creem-confirm-dialog'
-import { WechatQrDialog } from './components/dialogs/wechat-qr-dialog'
 import { PaymentConfirmDialog } from './components/dialogs/payment-confirm-dialog'
 import { TransferDialog } from './components/dialogs/transfer-dialog'
 import { RechargeFormCard } from './components/recharge-form-card'
@@ -28,7 +45,6 @@ import {
   getMinTopupAmount,
   isWaffoPancakePayment,
 } from './lib'
-import { checkAlipayOrder } from './api'
 import type {
   UserWalletData,
   PaymentMethod,
@@ -38,10 +54,6 @@ import type {
 
 interface WalletProps {
   initialShowHistory?: boolean
-  /** Set to true when returning from Alipay payment page */
-  alipayReturn?: boolean
-  /** out_trade_no from Alipay return URL - used for active order check */
-  alipayOutTradeNo?: string
 }
 
 export function Wallet(props: WalletProps) {
@@ -60,9 +72,6 @@ export function Wallet(props: WalletProps) {
   const [creemDialogOpen, setCreemDialogOpen] = useState(false)
   const [selectedCreemProduct, setSelectedCreemProduct] =
     useState<CreemProduct | null>(null)
-  const [wechatQrOpen, setWechatQrOpen] = useState(false)
-  const [wechatQrUrl, setWechatQrUrl] = useState('')
-  const [wechatOrderId, setWechatOrderId] = useState('')
   const [showSubscriptionPanel, setShowSubscriptionPanel] = useState(true)
 
   const { status } = useStatus()
@@ -120,32 +129,6 @@ export function Wallet(props: WalletProps) {
       window.history.replaceState({}, '', window.location.pathname)
     }
   }, [props.initialShowHistory])
-
-  // Handle Alipay synchronous return: call active order check
-  useEffect(() => {
-    if (!props.alipayReturn) return
-    // Prefer explicit out_trade_no; fall back to URL query param (Alipay appends it)
-    const tradeNo =
-      props.alipayOutTradeNo ||
-      new URLSearchParams(window.location.search).get('out_trade_no') ||
-      ''
-    if (!tradeNo) return
-
-    // Clean up the return params from the URL without reload
-    window.history.replaceState({}, '', window.location.pathname)
-
-    checkAlipayOrder(tradeNo).then((res) => {
-      if (res.message === 'success') {
-        toast.success(t('Payment successful'))
-        fetchUser()
-      } else {
-        toast.info(t('Payment is being processed, please refresh later'))
-      }
-    }).catch(() => {
-      toast.info(t('Payment is being processed, please refresh later'))
-    })
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [props.alipayReturn, props.alipayOutTradeNo])
 
   // Initialize topup amount when topup info is loaded
   useEffect(() => {
@@ -205,14 +188,7 @@ export function Wallet(props: WalletProps) {
     const isPancake = isWaffoPancakePayment(selectedPaymentMethod.type)
     const success = isPancake
       ? await processWaffoPancakePayment(topupAmount)
-      : await processPayment(topupAmount, selectedPaymentMethod.type, {
-          onWechatQr: (qrUrl, orderId) => {
-            setWechatQrUrl(qrUrl)
-            setWechatOrderId(orderId)
-            setWechatQrOpen(true)
-            setConfirmDialogOpen(false)
-          },
-        })
+      : await processPayment(topupAmount, selectedPaymentMethod.type)
 
     if (success) {
       setConfirmDialogOpen(false)
@@ -381,14 +357,6 @@ export function Wallet(props: WalletProps) {
         onConfirm={handleCreemConfirm}
         product={selectedCreemProduct}
         processing={creemProcessing}
-      />
-
-      <WechatQrDialog
-        open={wechatQrOpen}
-        onOpenChange={setWechatQrOpen}
-        qrUrl={wechatQrUrl}
-        orderId={wechatOrderId}
-        onPaymentSuccess={fetchUser}
       />
     </>
   )

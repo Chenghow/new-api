@@ -47,7 +47,6 @@ export default function SettingsHeaderNavModules(props) {
       requireAuth: false, // 默认不需要登录鉴权
     },
     docs: true,
-    quickStart: true,
     about: true,
   });
 
@@ -88,7 +87,6 @@ export default function SettingsHeaderNavModules(props) {
         requireAuth: false,
       },
       docs: true,
-      quickStart: true,
       about: true,
     };
     setHeaderNavModules(defaultModules);
@@ -144,10 +142,6 @@ export default function SettingsHeaderNavModules(props) {
           };
         }
 
-        if (typeof modules.quickStart === 'undefined') {
-          modules.quickStart = true;
-        }
-
         setHeaderNavModules(modules);
       } catch (error) {
         // 使用默认配置
@@ -189,11 +183,6 @@ export default function SettingsHeaderNavModules(props) {
       title: t('文档'),
       description: t('系统文档和帮助信息'),
     },
-      {
-        key: 'quickStart',
-        title: t('快速开始'),
-        description: t('快速开始页面，展示入门内容'),
-      },
     {
       key: 'about',
       title: t('关于'),
