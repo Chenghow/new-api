@@ -30,6 +30,7 @@ import {
   getQuotaPerUnit,
 } from '../../helpers';
 import { Modal, Toast } from '@douyinfe/semi-ui';
+import { QRCodeSVG } from 'qrcode.react';
 import { useTranslation } from 'react-i18next';
 import { UserContext } from '../../context/User';
 import { StatusContext } from '../../context/Status';
@@ -82,6 +83,10 @@ const TopUp = () => {
   const [amountLoading, setAmountLoading] = useState(false);
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
+  const [wechatQrOpen, setWechatQrOpen] = useState(false);
+  const [wechatQrUrl, setWechatQrUrl] = useState('');
+  const [wechatQrOrderId, setWechatQrOrderId] = useState('');
+  const [wechatCheckInterval, setWechatCheckInterval] = useState(null);
   const [payMethods, setPayMethods] = useState([]);
 
   const affFetchedRef = useRef(false);
@@ -295,8 +300,28 @@ const TopUp = () => {
           if (payWay === 'stripe') {
             // Stripe 支付回调处理
             window.open(data.pay_link, '_blank');
+          } else if (payWay === 'alipayv3') {
+            // 支付宝直连 — 后端返回 data.pay_link
+            window.open(data.pay_link, '_blank');
+          } else if (payWay === 'wechat_native') {
+            // 微信 Native 支付 — 后端返回 data.code_url + data.order_id
+            setWechatQrUrl(data.code_url || '');
+            setWechatQrOrderId(data.order_id || '');
+            setWechatQrOpen(true);
+            const interval = setInterval(async () => {
+              try {
+                const checkRes = await API.get(`/api/wechat/check?out_trade_no=${data.order_id}`);
+                if (checkRes?.data?.data?.paid) {
+                  clearInterval(interval);
+                  setWechatCheckInterval(null);
+                  setWechatQrOpen(false);
+                  showSuccess(t('支付成功'));
+                }
+              } catch (_e) { /* ignore */ }
+            }, 3000);
+            setWechatCheckInterval(interval);
           } else {
-            // 普通支付表单提交
+            // 普通支付表单提交（易支付等）
             let params = data;
             let url = res.data.url;
             let form = document.createElement('form');
@@ -1006,6 +1031,39 @@ const TopUp = () => {
           complianceConfirmed={topupInfo.payment_compliance_confirmed !== false}
         />
       </div>
+      {/* 微信 Native 支付 QR 码模态框 */}
+      <Modal
+        title={t('微信支付')}
+        visible={wechatQrOpen}
+        onOk={() => {
+          if (wechatCheckInterval) {
+            clearInterval(wechatCheckInterval);
+            setWechatCheckInterval(null);
+          }
+          setWechatQrOpen(false);
+        }}
+        onCancel={() => {
+          if (wechatCheckInterval) {
+            clearInterval(wechatCheckInterval);
+            setWechatCheckInterval(null);
+          }
+          setWechatQrOpen(false);
+        }}
+        okText={t("我已支付")}
+        cancelText={t("取消")}
+        centered
+        size='small'
+      >
+        <div style={{ textAlign: 'center', padding: '16px' }}>
+          <p style={{ marginBottom: 16 }}>{t('请用微信扫描二维码完成支付')}</p>
+          {wechatQrUrl ? (
+            <QRCodeSVG value={wechatQrUrl} size={200} style={{ margin: '0 auto' }} />
+          ) : (
+            <p>{t('二维码不可用')}</p>
+          )}
+          <p style={{ marginTop: 16, color: '#888', fontSize: 13 }}>{t('等待支付中...')}</p>
+        </div>
+      </Modal>
     </div>
   );
 };

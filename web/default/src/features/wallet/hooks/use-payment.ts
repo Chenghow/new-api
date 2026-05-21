@@ -30,12 +30,24 @@ import {
 import {
   isStripePayment,
   isWaffoPancakePayment,
+  isAlipayDirectPayment,
+  isWechatNativePayment,
   submitPaymentForm,
 } from '../lib'
 
 // ============================================================================
 // Payment Hook
 // ============================================================================
+
+export interface WechatQrInfo {
+  qrUrl: string
+  orderId: string
+}
+
+export interface PaymentResult {
+  success: boolean
+  wechatQr?: WechatQrInfo
+}
 
 export function usePayment() {
   const [amount, setAmount] = useState<number>(0)
@@ -77,11 +89,13 @@ export function usePayment() {
 
   // Process payment
   const processPayment = useCallback(
-    async (topupAmount: number, paymentType: string) => {
+    async (topupAmount: number, paymentType: string): Promise<PaymentResult> => {
       try {
         setProcessing(true)
 
         const isStripe = isStripePayment(paymentType)
+        const isAlipayDirect = isAlipayDirectPayment(paymentType)
+        const isWechatNative = isWechatNativePayment(paymentType)
         const amount = Math.floor(topupAmount)
 
         const response = isStripe
@@ -96,30 +110,48 @@ export function usePayment() {
 
         if (!isApiSuccess(response)) {
           toast.error(response.message || i18next.t('Payment request failed'))
-          return false
+          return { success: false }
         }
 
         // Handle Stripe payment
         if (isStripe && response.data?.pay_link) {
           window.open(response.data.pay_link as string, '_blank')
           toast.success(i18next.t('Redirecting to payment page...'))
-          return true
+          return { success: true }
         }
 
-        // Handle non-Stripe payment
-        if (!isStripe && response.data) {
+        // Handle Alipay Direct Connect (alipayv3) — backend returns data.pay_link
+        if (isAlipayDirect && response.data?.pay_link) {
+          window.open(response.data.pay_link as string, '_blank')
+          toast.success(i18next.t('Redirecting to payment page...'))
+          return { success: true }
+        }
+
+        // Handle WeChat Native Pay — backend returns data.code_url + data.order_id
+        if (isWechatNative && response.data?.code_url) {
+          return {
+            success: true,
+            wechatQr: {
+              qrUrl: response.data.code_url as string,
+              orderId: (response.data.order_id as string) || '',
+            },
+          }
+        }
+
+        // Handle non-Stripe / non-direct payment (epay form submit)
+        if (!isStripe && !isAlipayDirect && !isWechatNative && response.data) {
           const url = (response as unknown as { url?: string }).url
           if (url) {
             submitPaymentForm(url, response.data)
             toast.success(i18next.t('Redirecting to payment page...'))
-            return true
+            return { success: true }
           }
         }
 
-        return false
+        return { success: false }
       } catch (_error) {
         toast.error(i18next.t('Payment request failed'))
-        return false
+        return { success: false }
       } finally {
         setProcessing(false)
       }

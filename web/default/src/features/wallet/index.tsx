@@ -25,6 +25,7 @@ import { SectionPageLayout } from '@/components/layout'
 import { AffiliateRewardsCard } from './components/affiliate-rewards-card'
 import { BillingHistoryDialog } from './components/dialogs/billing-history-dialog'
 import { CreemConfirmDialog } from './components/dialogs/creem-confirm-dialog'
+import { WechatQrDialog } from './components/dialogs/wechat-qr-dialog'
 import { PaymentConfirmDialog } from './components/dialogs/payment-confirm-dialog'
 import { TransferDialog } from './components/dialogs/transfer-dialog'
 import { RechargeFormCard } from './components/recharge-form-card'
@@ -40,6 +41,7 @@ import {
   useWaffoPayment,
   useWaffoPancakePayment,
 } from './hooks'
+import type { WechatQrInfo } from './hooks/use-payment'
 import {
   getDefaultPaymentType,
   getMinTopupAmount,
@@ -73,6 +75,8 @@ export function Wallet(props: WalletProps) {
   const [selectedCreemProduct, setSelectedCreemProduct] =
     useState<CreemProduct | null>(null)
   const [showSubscriptionPanel, setShowSubscriptionPanel] = useState(true)
+  const [wechatQrOpen, setWechatQrOpen] = useState(false)
+  const [wechatQrInfo, setWechatQrInfo] = useState<WechatQrInfo | null>(null)
 
   const { status } = useStatus()
   const { currency } = useSystemConfig()
@@ -186,11 +190,26 @@ export function Wallet(props: WalletProps) {
     if (!selectedPaymentMethod) return
 
     const isPancake = isWaffoPancakePayment(selectedPaymentMethod.type)
-    const success = isPancake
-      ? await processWaffoPancakePayment(topupAmount)
-      : await processPayment(topupAmount, selectedPaymentMethod.type)
+    if (isPancake) {
+      const success = await processWaffoPancakePayment(topupAmount)
+      if (success) {
+        setConfirmDialogOpen(false)
+        await fetchUser()
+      }
+      return
+    }
 
-    if (success) {
+    const result = await processPayment(topupAmount, selectedPaymentMethod.type)
+
+    if (result.wechatQr) {
+      // WeChat Native Pay: show QR dialog
+      setConfirmDialogOpen(false)
+      setWechatQrInfo(result.wechatQr)
+      setWechatQrOpen(true)
+      return
+    }
+
+    if (result.success) {
       setConfirmDialogOpen(false)
       await fetchUser()
     }
@@ -360,6 +379,16 @@ export function Wallet(props: WalletProps) {
         onConfirm={handleCreemConfirm}
         product={selectedCreemProduct}
         processing={creemProcessing}
+      />
+      <WechatQrDialog
+        open={wechatQrOpen}
+        onOpenChange={setWechatQrOpen}
+        qrUrl={wechatQrInfo?.qrUrl ?? ''}
+        orderId={wechatQrInfo?.orderId ?? ''}
+        onPaymentSuccess={async () => {
+          setWechatQrOpen(false)
+          await fetchUser()
+        }}
       />
     </>
   )
